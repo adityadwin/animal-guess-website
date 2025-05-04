@@ -1,0 +1,55 @@
+/* src/index.css */
+@import "tailwindcss"; /* Pastikan ini ada jika menggunakan Tailwind CLI/PostCSS */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  /* Hapus atau ubah overflow: hidden */
+  /* overflow: hidden; */
+  overflow-x: hidden; /* Hanya sembunyikan scroll horizontal jika benar2 tidak diinginkan */
+  overflow-y: auto; /* Izinkan scroll vertikal jika perlu */
+}
+
+body {
+  font-family: "Arial", sans-serif; /* Atau font pilihan Anda */
+  background-color: #f0f0f0; /* Default background jika diperlukan */
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HAPUS BLOK INI */
+/* .rotate-landscape { ... } */
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+
+/* Tambahkan base style untuk memastikan tinggi minimal */
+#root > div {
+  /* Target direct child div inside root assuming it's the main page container */
+  min-height: 100%;
+}
