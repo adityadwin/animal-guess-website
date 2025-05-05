@@ -4,7 +4,7 @@ import { useSound } from "../contexts/SoundContext";
 import ControlButton from "../components/ControlButton";
 import Button from "../components/Button";
 
-// --- Komponen Ikon (BackIcon, SoundIcon, PlaySoundIcon) ---
+// --- Komponen Ikon ---
 const BackIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -21,26 +21,35 @@ const BackIcon = () => (
     />
   </svg>
 );
+
+// --- Komponen SoundIcon DIGANTI dengan ikon Heroicons ---
 const SoundIcon = ({ isMuted }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6"
+    className="h-6 w-6" // Ukuran tetap sama
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
+    strokeWidth={2} // Ketebalan garis stroke
   >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d={
-        isMuted
-          ? "M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-          : "M15.536 8.464a5 5 0 010 7.072M12 18a6 6 0 01-7.743-9M12 18c-3.866 0-7-3.272-7-7a7 7 0 017-7 7 7 0 017 7M12 6v12"
-      }
-    />
+    {isMuted ? (
+      // Ikon Mute (Volume Off dari Heroicons)
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
+      />
+    ) : (
+      // Ikon Unmute (Volume Up dari Heroicons)
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
+      />
+    )}
   </svg>
 );
+
 const PlaySoundIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -238,7 +247,10 @@ const GuessGame = () => {
         }}
       >
         {" "}
-        <div className="absolute inset-0"></div>{" "}
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
+        ></div>{" "}
         <div className="text-2xl text-white bg-black bg-opacity-50 p-4 rounded z-10">
           Loading...
         </div>{" "}
@@ -257,6 +269,11 @@ const GuessGame = () => {
         backgroundAttachment: "fixed",
       }}
     >
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
+      ></div>
+
       {/* Header Tombol Kontrol */}
       <div className="z-10 flex justify-between mb-6 sm:mb-8">
         <div className="flex space-x-3 sm:space-x-4">
@@ -264,6 +281,7 @@ const GuessGame = () => {
             {" "}
             <ControlButton icon={<BackIcon />} ariaLabel="Back to home" />{" "}
           </Link>
+          {/* Menggunakan SoundIcon yang sudah diperbarui */}
           <ControlButton
             icon={<SoundIcon isMuted={isMuted} />}
             onClick={toggleMute}
@@ -276,18 +294,13 @@ const GuessGame = () => {
         // Tampilan Game Berlangsung
         <div className="flex-1 flex flex-col">
           <h1
-            className="text-5xl sm:text-4xl font-bold text-center mb-6 sm:mb-10 text-amber-500 z-10"
+            className="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-10 text-amber-500 z-10"
             style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.7)" }}
           >
             Siapa yang Bersuara?
           </h1>
 
-          {/* Area Pilihan Hewan & Tombol Suara */}
-          {/* Ganti items-center menjadi items-end */}
           <div className="flex-1 flex justify-around items-end z-10 mb-4 pb-4">
-            {" "}
-            {/* Tambah padding bottom jika perlu */}
-            {/* Pilihan Hewan Kiri */}
             <div className="w-[30%] sm:w-1/3 flex flex-col items-center">
               {currentPair.length > 0 && currentPair[0] && (
                 <div
@@ -302,8 +315,7 @@ const GuessGame = () => {
                     src={currentPair[0].img}
                     alt={currentPair[0].name}
                     className="w-auto max-h-[35vh] sm:max-h-[40vh] object-contain"
-                  />{" "}
-                  {/* Sesuaikan max-h */}
+                  />
                 </div>
               )}
               {currentPair.length > 0 && currentPair[0] && (
@@ -315,10 +327,8 @@ const GuessGame = () => {
                 </p>
               )}
             </div>
-            {/* Tombol Play Suara di Tengah */}
+
             <div className="flex justify-center items-center pb-4 sm:pb-6">
-              {" "}
-              {/* Beri padding bottom agar sejajar dgn dasar nama */}
               <button
                 onClick={handlePlaySound}
                 aria-label="Play animal sound"
@@ -327,7 +337,7 @@ const GuessGame = () => {
                 <PlaySoundIcon />
               </button>
             </div>
-            {/* Pilihan Hewan Kanan */}
+
             <div className="w-[30%] sm:w-1/3 flex flex-col items-center">
               {currentPair.length > 1 && currentPair[1] && (
                 <div
@@ -342,8 +352,7 @@ const GuessGame = () => {
                     src={currentPair[1].img}
                     alt={currentPair[1].name}
                     className="w-auto max-h-[35vh] sm:max-h-[40vh] object-contain"
-                  />{" "}
-                  {/* Sesuaikan max-h */}
+                  />
                 </div>
               )}
               {currentPair.length > 1 && currentPair[1] && (
@@ -357,10 +366,7 @@ const GuessGame = () => {
             </div>
           </div>
 
-          {/* Indikator Soal (Footer) */}
-          <div className="mt-auto w-full flex justify-center z-10 pb-2 sm:pb-4">
-            {" "}
-          </div>
+          <div className="mt-auto w-full flex justify-center z-10 pb-2 sm:pb-4"></div>
         </div>
       ) : (
         // Tampilan Game Selesai
