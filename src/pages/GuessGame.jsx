@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useSound } from "../contexts/SoundContext";
 import ControlButton from "../components/ControlButton";
 import Button from "../components/Button";
-// Hapus import useLandscapeOrientation
 
 // --- Komponen Ikon (BackIcon, SoundIcon, PlaySoundIcon) ---
 const BackIcon = () => (
@@ -138,7 +137,7 @@ const getPairForQuestion = (correctAnimal) => {
 };
 
 const GuessGame = () => {
-  // Hapus panggilan useLandscapeOrientation();
+  // Hapus useLandscapeOrientation(); jika tidak dipakai
   const { playBgm, playAnimalSound, stopAllAnimalSounds, toggleMute, isMuted } =
     useSound();
   const [gameQuestions, setGameQuestions] = useState([]);
@@ -239,10 +238,7 @@ const GuessGame = () => {
         }}
       >
         {" "}
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
-        ></div>{" "}
+        <div className="absolute inset-0"></div>{" "}
         <div className="text-2xl text-white bg-black bg-opacity-50 p-4 rounded z-10">
           Loading...
         </div>{" "}
@@ -253,7 +249,7 @@ const GuessGame = () => {
   // --- Render JSX ---
   return (
     <div
-      className="min-h-screen w-full flex flex-col relative overflow-auto p-4 sm:p-6" // Ganti overflow-hidden -> overflow-auto, sesuaikan padding
+      className="min-h-screen w-full flex flex-col relative overflow-auto p-4 sm:p-6"
       style={{
         backgroundImage: `url(/assets/images/hutan.jpg)`,
         backgroundSize: "cover",
@@ -261,11 +257,6 @@ const GuessGame = () => {
         backgroundAttachment: "fixed",
       }}
     >
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
-      ></div>
-
       {/* Header Tombol Kontrol */}
       <div className="z-10 flex justify-between mb-6 sm:mb-8">
         <div className="flex space-x-3 sm:space-x-4">
@@ -284,16 +275,18 @@ const GuessGame = () => {
       {!gameComplete ? (
         // Tampilan Game Berlangsung
         <div className="flex-1 flex flex-col">
-          {" "}
-          {/* Container utama game agar bisa push footer */}
           <h1
-            className="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-10 text-amber-500 z-10"
+            className="text-5xl sm:text-4xl font-bold text-center mb-6 sm:mb-10 text-amber-500 z-10"
             style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.7)" }}
           >
             Siapa yang Bersuara?
           </h1>
+
           {/* Area Pilihan Hewan & Tombol Suara */}
-          <div className="flex-1 flex justify-around items-center z-10 mb-4">
+          {/* Ganti items-center menjadi items-end */}
+          <div className="flex-1 flex justify-around items-end z-10 mb-4 pb-4">
+            {" "}
+            {/* Tambah padding bottom jika perlu */}
             {/* Pilihan Hewan Kiri */}
             <div className="w-[30%] sm:w-1/3 flex flex-col items-center">
               {currentPair.length > 0 && currentPair[0] && (
@@ -308,9 +301,9 @@ const GuessGame = () => {
                   <img
                     src={currentPair[0].img}
                     alt={currentPair[0].name}
-                    className="w-auto max-h-[35vh] object-contain"
+                    className="w-auto max-h-[35vh] sm:max-h-[40vh] object-contain"
                   />{" "}
-                  {/* Max Height relatif VH */}
+                  {/* Sesuaikan max-h */}
                 </div>
               )}
               {currentPair.length > 0 && currentPair[0] && (
@@ -322,11 +315,10 @@ const GuessGame = () => {
                 </p>
               )}
             </div>
-
             {/* Tombol Play Suara di Tengah */}
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center pb-4 sm:pb-6">
               {" "}
-              {/* Tanpa width agar fleksibel */}
+              {/* Beri padding bottom agar sejajar dgn dasar nama */}
               <button
                 onClick={handlePlaySound}
                 aria-label="Play animal sound"
@@ -335,7 +327,6 @@ const GuessGame = () => {
                 <PlaySoundIcon />
               </button>
             </div>
-
             {/* Pilihan Hewan Kanan */}
             <div className="w-[30%] sm:w-1/3 flex flex-col items-center">
               {currentPair.length > 1 && currentPair[1] && (
@@ -350,9 +341,9 @@ const GuessGame = () => {
                   <img
                     src={currentPair[1].img}
                     alt={currentPair[1].name}
-                    className="w-auto max-h-[35vh] object-contain"
+                    className="w-auto max-h-[35vh] sm:max-h-[40vh] object-contain"
                   />{" "}
-                  {/* Max Height relatif VH */}
+                  {/* Sesuaikan max-h */}
                 </div>
               )}
               {currentPair.length > 1 && currentPair[1] && (
@@ -365,16 +356,12 @@ const GuessGame = () => {
               )}
             </div>
           </div>
+
           {/* Indikator Soal (Footer) */}
-          <div className="mt-auto w-full flex justify-center z-10 pb-4">
-            <div className="bg-white bg-opacity-70 px-3 py-1 sm:px-4 sm:py-2 rounded-lg">
-              <p className="text-base sm:text-lg">
-                {" "}
-                Soal {currentQuestionIndex + 1} dari {gameQuestions.length}{" "}
-              </p>
-            </div>
+          <div className="mt-auto w-full flex justify-center z-10 pb-2 sm:pb-4">
+            {" "}
           </div>
-        </div> // Akhir container utama game
+        </div>
       ) : (
         // Tampilan Game Selesai
         <div className="flex-1 flex flex-col items-center justify-center z-10 text-center">
