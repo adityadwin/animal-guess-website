@@ -136,9 +136,9 @@ const animals = [
     sound: null,
   },
   {
-    id: "kancil",
-    name: "أيل الفأر",
-    img: "/assets/images/kancil.png",
+    id: "Rusa",
+    name: "غَزَالٌ",
+    img: "/assets/images/rusa.png",
     sound: null,
   },
   { id: "burung", name: "طائر", img: "/assets/images/burung.png", sound: null },
