@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSound } from "../contexts/SoundContext";
 import ControlButton from "../components/ControlButton";
 import Button from "../components/Button";
+// Hapus import useLandscapeOrientation jika tidak dipakai lagi
 
 // --- Komponen Ikon ---
 const BackIcon = () => (
@@ -21,35 +22,31 @@ const BackIcon = () => (
     />
   </svg>
 );
-
-// --- Komponen SoundIcon DIGANTI dengan ikon Heroicons ---
 const SoundIcon = ({ isMuted }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6" // Ukuran tetap sama
+    className="h-6 w-6"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
-    strokeWidth={2} // Ketebalan garis stroke
+    strokeWidth={2}
   >
+    {" "}
     {isMuted ? (
-      // Ikon Mute (Volume Off dari Heroicons)
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
       />
     ) : (
-      // Ikon Unmute (Volume Up dari Heroicons)
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
       />
-    )}
+    )}{" "}
   </svg>
 );
-
 const PlaySoundIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -73,7 +70,37 @@ const PlaySoundIcon = () => (
   </svg>
 );
 
-// --- Array animals (sudah diperbaiki sebelumnya) ---
+// --- Ikon Feedback Baru ---
+const CheckCircleIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-20 w-20 sm:h-24 sm:w-24 text-green-500"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+const XCircleIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-20 w-20 sm:h-24 sm:w-24 text-red-500"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+// --- Array animals ---
 const animals = [
   { id: "ular", name: "ثعبان", img: "/assets/images/ular.png", sound: "ular" },
   {
@@ -147,8 +174,15 @@ const getPairForQuestion = (correctAnimal) => {
 
 const GuessGame = () => {
   // Hapus useLandscapeOrientation(); jika tidak dipakai
-  const { playBgm, playAnimalSound, stopAllAnimalSounds, toggleMute, isMuted } =
-    useSound();
+  const {
+    playBgm,
+    playAnimalSound,
+    stopAllAnimalSounds,
+    playCorrectSound,
+    playWrongSound,
+    toggleMute,
+    isMuted,
+  } = useSound(); // <-- Ambil playCorrectSound & playWrongSound
   const [gameQuestions, setGameQuestions] = useState([]);
   const [questionPairs, setQuestionPairs] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -156,8 +190,10 @@ const GuessGame = () => {
   const [correctAnimal, setCorrectAnimal] = useState(null);
   const [showWrong, setShowWrong] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
+  const [feedback, setFeedback] = useState(null); // <-- State baru untuk feedback ('correct', 'wrong', null)
+  const [isAnswering, setIsAnswering] = useState(false); // <-- State untuk mencegah klik ganda saat feedback
 
-  // Effect setup game (dependensi kosong)
+  // Effect setup game
   useEffect(() => {
     playBgm("guess");
     const questions = getRandomAnimalsWithSound();
@@ -185,6 +221,7 @@ const GuessGame = () => {
       setCorrectAnimal(currentQuestion);
       setCurrentPair(pair);
       setShowWrong(false);
+      setIsAnswering(false); // Izinkan menjawab lagi
     } else if (
       gameQuestions.length > 0 &&
       currentQuestionIndex >= gameQuestions.length &&
@@ -194,28 +231,51 @@ const GuessGame = () => {
     }
   }, [gameQuestions, currentQuestionIndex, questionPairs, gameComplete]);
 
-  // --- Fungsi Handler (handleAnimalClick, handlePlaySound, handleRestart) ---
+  // --- Modifikasi handleAnimalClick ---
   const handleAnimalClick = (animal) => {
-    if (gameComplete || showWrong) return;
+    // Cegah klik ganda saat feedback tampil atau game selesai
+    if (isAnswering || gameComplete || showWrong) return;
+
+    setIsAnswering(true); // Mulai proses menjawab
+    stopAllAnimalSounds(); // Hentikan suara hewan (jika ada)
+
     if (animal.id === correctAnimal.id) {
-      stopAllAnimalSounds();
-      if (currentQuestionIndex < gameQuestions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else {
-        setGameComplete(true);
-      }
+      // --- Jawaban Benar ---
+      playCorrectSound(); // Mainkan suara benar
+      setFeedback("correct"); // Tampilkan ikon benar
+
+      setTimeout(() => {
+        setFeedback(null); // Sembunyikan ikon
+        if (currentQuestionIndex < gameQuestions.length - 1) {
+          setCurrentQuestionIndex(currentQuestionIndex + 1); // Lanjut soal berikutnya
+        } else {
+          setGameComplete(true); // Selesaikan game
+        }
+        // setIsAnswering(false) akan di-set oleh useEffect [currentQuestionIndex]
+      }, 1500); // Durasi feedback benar (1.5 detik)
     } else {
-      setShowWrong(true);
-      setTimeout(() => setShowWrong(false), 500);
+      // --- Jawaban Salah ---
+      playWrongSound(); // Mainkan suara salah
+      setFeedback("wrong"); // Tampilkan ikon salah
+      setShowWrong(true); // Terapkan animasi shake
+
+      setTimeout(() => {
+        setFeedback(null); // Sembunyikan ikon
+        setShowWrong(false); // Hentikan animasi shake
+        setIsAnswering(false); // Izinkan menjawab lagi
+      }, 1500); // Durasi feedback salah (1.5 detik)
     }
   };
+
   const handlePlaySound = () => {
-    if (correctAnimal && correctAnimal.sound) {
+    if (correctAnimal && correctAnimal.sound && !isAnswering) {
       playAnimalSound(correctAnimal.sound);
     }
-  };
+  }; // Cegah play sound saat feedback
   const handleRestart = () => {
     stopAllAnimalSounds();
+    setFeedback(null);
+    setIsAnswering(false);
     const newQuestions = getRandomAnimalsWithSound();
     let newPairs = [];
     if (newQuestions.length > 0) {
@@ -245,20 +305,11 @@ const GuessGame = () => {
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
-      >
-        {" "}
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
-        ></div>{" "}
-        <div className="text-2xl text-white bg-black bg-opacity-50 p-4 rounded z-10">
-          Loading...
-        </div>{" "}
-      </div>
+      ></div>
     );
   }
 
-  // --- Render JSX ---
+  // --- Render JSX Utama ---
   return (
     <div
       className="min-h-screen w-full flex flex-col relative overflow-auto p-4 sm:p-6"
@@ -269,10 +320,16 @@ const GuessGame = () => {
         backgroundAttachment: "fixed",
       }}
     >
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
-      ></div>
+      {/* --- Container Feedback Overlay --- */}
+      {feedback && (
+        <div className="absolute inset-0 flex items-center justify-center z-50 ">
+          <div className="bg-white bg-opacity-80 p-4 sm:p-6 rounded-full shadow-xl">
+            {feedback === "correct" && <CheckCircleIcon />}
+            {feedback === "wrong" && <XCircleIcon />}
+          </div>
+        </div>
+      )}
+      {/* --- Akhir Container Feedback --- */}
 
       {/* Header Tombol Kontrol */}
       <div className="z-10 flex justify-between mb-6 sm:mb-8">
@@ -281,7 +338,6 @@ const GuessGame = () => {
             {" "}
             <ControlButton icon={<BackIcon />} ariaLabel="Back to home" />{" "}
           </Link>
-          {/* Menggunakan SoundIcon yang sudah diperbarui */}
           <ControlButton
             icon={<SoundIcon isMuted={isMuted} />}
             onClick={toggleMute}
@@ -291,24 +347,24 @@ const GuessGame = () => {
       </div>
 
       {!gameComplete ? (
-        // Tampilan Game Berlangsung
         <div className="flex-1 flex flex-col">
           <h1
-            className="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-10 text-amber-500 z-10"
+            className="text-5xl lg:text-6xl sm:text-4xl md:text-6xl font-bold text-center mt-16 mb-6 sm:mb-10 text-amber-500 z-10"
             style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.7)" }}
           >
             Siapa yang Bersuara?
           </h1>
-
           <div className="flex-1 flex justify-around items-end z-10 mb-4 pb-4">
             <div className="w-[30%] sm:w-1/3 flex flex-col items-center">
               {currentPair.length > 0 && currentPair[0] && (
                 <div
                   className={`cursor-pointer transition-transform duration-100 ${
-                    showWrong && currentPair[0].id !== correctAnimal?.id
+                    showWrong &&
+                    currentPair[0].id !== correctAnimal?.id &&
+                    feedback === "wrong"
                       ? "shake"
                       : "hover:scale-105"
-                  }`}
+                  } ${isAnswering ? "opacity-50 pointer-events-none" : ""}`}
                   onClick={() => handleAnimalClick(currentPair[0])}
                 >
                   <img
@@ -320,32 +376,38 @@ const GuessGame = () => {
               )}
               {currentPair.length > 0 && currentPair[0] && (
                 <p
-                  className="mt-1 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-semibold text-white text-center"
+                  className={`mt-1 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-semibold text-white text-center ${
+                    isAnswering ? "opacity-50" : ""
+                  }`}
                   style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.7)" }}
                 >
                   {currentPair[0].name}
                 </p>
               )}
             </div>
-
             <div className="flex justify-center items-center pb-4 sm:pb-6">
               <button
                 onClick={handlePlaySound}
                 aria-label="Play animal sound"
-                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-yellow-500 rounded-full flex items-center justify-center text-white hover:bg-yellow-600 transition-colors"
+                className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-yellow-500 rounded-full flex items-center justify-center text-white transition-opacity duration-300 ${
+                  isAnswering
+                    ? "opacity-50 pointer-events-none"
+                    : "hover:bg-yellow-600"
+                }`}
               >
                 <PlaySoundIcon />
               </button>
             </div>
-
             <div className="w-[30%] sm:w-1/3 flex flex-col items-center">
               {currentPair.length > 1 && currentPair[1] && (
                 <div
                   className={`cursor-pointer transition-transform duration-100 ${
-                    showWrong && currentPair[1].id !== correctAnimal?.id
+                    showWrong &&
+                    currentPair[1].id !== correctAnimal?.id &&
+                    feedback === "wrong"
                       ? "shake"
                       : "hover:scale-105"
-                  }`}
+                  } ${isAnswering ? "opacity-50 pointer-events-none" : ""}`}
                   onClick={() => handleAnimalClick(currentPair[1])}
                 >
                   <img
@@ -357,7 +419,9 @@ const GuessGame = () => {
               )}
               {currentPair.length > 1 && currentPair[1] && (
                 <p
-                  className="mt-1 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-semibold text-white text-center"
+                  className={`mt-1 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-semibold text-white text-center ${
+                    isAnswering ? "opacity-50" : ""
+                  }`}
                   style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.7)" }}
                 >
                   {currentPair[1].name}
@@ -365,11 +429,8 @@ const GuessGame = () => {
               )}
             </div>
           </div>
-
-          <div className="mt-auto w-full flex justify-center z-10 pb-2 sm:pb-4"></div>
         </div>
       ) : (
-        // Tampilan Game Selesai
         <div className="flex-1 flex flex-col items-center justify-center z-10 text-center">
           <h2
             className="text-4xl md:text-5xl font-bold mb-6 text-green-500"

@@ -15,7 +15,7 @@ export const SoundProvider = ({ children }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [currentBgmType, setCurrentBgmType] = useState(null);
   const bgmSoundsRef = useRef({});
-  const animalSoundsRef = useRef({});
+  const fxSoundsRef = useRef({}); // Pisahkan Ref untuk SFX (Sound Effects)
 
   useEffect(() => {
     bgmSoundsRef.current = {
@@ -45,8 +45,9 @@ export const SoundProvider = ({ children }) => {
     };
   }, []);
 
+  // Pisahkan inisialisasi SFX
   useEffect(() => {
-    animalSoundsRef.current = {
+    fxSoundsRef.current = {
       ular: new Howl({
         src: ["/assets/sounds/ular.mp3"],
         preload: true,
@@ -77,19 +78,34 @@ export const SoundProvider = ({ children }) => {
         html5: true,
         volume: 0.8,
       }),
+      // Tambahkan suara feedback
+      correct: new Howl({
+        src: ["/assets/sounds/correct.mp3"],
+        preload: true,
+        html5: true,
+        volume: 0.7,
+      }),
+      wrong: new Howl({
+        src: ["/assets/sounds/wrong.mp3"],
+        preload: true,
+        html5: true,
+        volume: 0.7,
+      }),
     };
     return () => {
-      Object.values(animalSoundsRef.current).forEach((sound) => {
+      Object.values(fxSoundsRef.current).forEach((sound) => {
         if (sound) {
           sound.unload();
         }
       });
-      animalSoundsRef.current = {};
+      fxSoundsRef.current = {};
     };
   }, []);
 
   const stopAllAnimalSounds = useCallback(() => {
-    Object.values(animalSoundsRef.current).forEach((sound) => {
+    // Hanya stop suara hewan, bukan feedback
+    ["ular", "monyet", "harimau", "gajah", "merak"].forEach((animalId) => {
+      const sound = fxSoundsRef.current[animalId];
       if (sound && sound.playing()) {
         sound.stop();
       }
@@ -98,18 +114,29 @@ export const SoundProvider = ({ children }) => {
 
   const playAnimalSound = useCallback(
     (animal) => {
-      if (isMuted || !animalSoundsRef.current[animal]) return;
-      stopAllAnimalSounds();
-      animalSoundsRef.current[animal].play();
+      if (isMuted || !fxSoundsRef.current[animal]) return;
+      stopAllAnimalSounds(); // Hentikan suara hewan lain
+      fxSoundsRef.current[animal].play();
     },
     [isMuted, stopAllAnimalSounds]
   );
 
+  // Fungsi baru untuk suara feedback
+  const playCorrectSound = useCallback(() => {
+    if (isMuted || !fxSoundsRef.current.correct) return;
+    fxSoundsRef.current.correct.play();
+  }, [isMuted]);
+
+  const playWrongSound = useCallback(() => {
+    if (isMuted || !fxSoundsRef.current.wrong) return;
+    fxSoundsRef.current.wrong.play();
+  }, [isMuted]);
+
+  // --- Fungsi BGM (playBgm, stopCurrentBgm) tetap sama ---
   const playBgm = useCallback(
     (type) => {
       const soundToPlay = type ? bgmSoundsRef.current[type] : null;
       const currentSound = bgmSoundsRef.current[currentBgmType];
-
       if (currentBgmType === type) {
         if (soundToPlay) {
           soundToPlay.mute(isMuted);
@@ -123,11 +150,9 @@ export const SoundProvider = ({ children }) => {
         }
         return;
       }
-
       if (currentSound) {
         currentSound.stop();
       }
-
       if (soundToPlay) {
         setCurrentBgmType(type);
         soundToPlay.mute(isMuted);
@@ -151,7 +176,6 @@ export const SoundProvider = ({ children }) => {
     },
     [currentBgmType, isMuted]
   );
-
   const stopCurrentBgm = useCallback(() => {
     const currentSound = bgmSoundsRef.current[currentBgmType];
     if (currentSound) {
@@ -163,36 +187,34 @@ export const SoundProvider = ({ children }) => {
   const toggleMute = useCallback(() => {
     const newMuteState = !isMuted;
     setIsMuted(newMuteState);
-    const currentSound = bgmSoundsRef.current[currentBgmType];
 
-    if (currentSound) {
-      currentSound.mute(newMuteState);
-      if (newMuteState) {
-        if (currentSound.playing()) {
-          currentSound.pause();
-        }
-      } else {
-        if (!currentSound.playing()) {
-          if (currentSound.state() === "loaded") {
-            currentSound.play();
-          } else {
-            currentSound.once("load", () => {
-              if (
-                !isMuted &&
-                bgmSoundsRef.current[currentBgmType] === currentSound
-              ) {
-                currentSound.play();
-              }
-            });
-            if (currentSound.state() === "unloaded") {
-              currentSound.load();
+    // Mute/Unmute BGM
+    const currentBgmSound = bgmSoundsRef.current[currentBgmType];
+    if (currentBgmSound) {
+      currentBgmSound.mute(newMuteState);
+      if (newMuteState && currentBgmSound.playing()) {
+        currentBgmSound.pause();
+      } else if (!newMuteState && !currentBgmSound.playing()) {
+        if (currentBgmSound.state() === "loaded") {
+          currentBgmSound.play();
+        } else {
+          currentBgmSound.once("load", () => {
+            if (
+              !isMuted &&
+              bgmSoundsRef.current[currentBgmType] === currentBgmSound
+            ) {
+              currentBgmSound.play();
             }
+          });
+          if (currentBgmSound.state() === "unloaded") {
+            currentBgmSound.load();
           }
         }
       }
     }
 
-    Object.values(animalSoundsRef.current).forEach((sound) => {
+    // Mute/Unmute semua SFX
+    Object.values(fxSoundsRef.current).forEach((sound) => {
       if (sound) {
         sound.mute(newMuteState);
       }
@@ -203,6 +225,8 @@ export const SoundProvider = ({ children }) => {
     () => ({
       playAnimalSound,
       stopAllAnimalSounds,
+      playCorrectSound, // <-- Export fungsi baru
+      playWrongSound, // <-- Export fungsi baru
       playBgm,
       stopCurrentBgm,
       toggleMute,
@@ -212,6 +236,8 @@ export const SoundProvider = ({ children }) => {
     [
       playAnimalSound,
       stopAllAnimalSounds,
+      playCorrectSound, // <-- Tambah dependency
+      playWrongSound, // <-- Tambah dependency
       playBgm,
       stopCurrentBgm,
       toggleMute,
